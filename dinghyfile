@@ -1,0 +1,6 @@
+{
+  "application": "training",
+  "globals": {
+      "bakedArtifactId": "helmBakedNginX"
+
+  }
