@@ -8,7 +8,13 @@
       "limitConcurrent": true,
       "name": "Simple",
       "stages": [
-        {{ module "wait.stage.module" }} // Module created in dinghy-templates repo
+        {
+          "name": "Wait",
+          "refId": "1",
+          "requisiteStageRefIds": [],
+          "type": "wait",
+          "waitTime": 60
+        }
       ],
       "triggers": []
     },
@@ -24,7 +30,7 @@
           "refId": "1",
           "requisiteStageRefIds": [],
           "type": "wait",
-          "waitTime": 180
+          "waitTime": 60
         }
       ],
       "triggers": []
