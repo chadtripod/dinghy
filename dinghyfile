@@ -1,20 +1,224 @@
 {
-  "application": "dinghy",
+  "application": "websitedinghy",
+  "email": "away@armory.io",
+  "globals": {
+    "waitTime": "10"
+  },
+  "deleteStalePipelines": false,
   "pipelines": [
     {
-      "application": "dinghy",
-      "index": 2,
+      "application": "websitedinghy",
+      "name": "Deploy and Check [Dinghy]",
+      "expectedArtifacts": [],
       "keepWaitingPipelines": false,
+      "lastModifiedBy": "anonymous",
       "limitConcurrent": true,
-      "name": "Simple",
-      "stages": [
+      "parameterConfig": [
         {
-          "name": "Wait",
-          "refId": "1",
-          "requisiteStageRefIds": [],
-          "type": "wait",
-          "waitTime": 60
+          "default": "1",
+          "description": "How many dev instances would you like?",
+          "label": "Number of Dev pods",
+          "name": "devcount",
+          "required": false
+        },
+        {
+          "default": "10",
+          "description": "How many prod instances would you like?",
+          "label": "Number of Prod pods",
+          "name": "prodcount"
         }
       ],
-      "triggers": []
+      "stages": [
+        {{
+          module "deploy.stage.module" 
+          "account" "gke-away"
+          "name" "Deploy to Dev Dec-05-2019-Part2"
+          "namespace" "dev"
+          "refId" "deployDev"
+        }},
+        {
+          "continuePipeline": false,
+          "failPipeline": true,
+          "job": "IntegrationTest-Website",
+          "master": "my-jenkins-master",
+          "name": "Automated Test (via Jenkins)",
+          "parameters": {
+            "DemoBoolean": true,
+            "DemoString": "Foo"
+          },
+          "propertyFile": "build.properties",
+          "refId": "IntegrationTest",
+          "requisiteStageRefIds": [
+            "deployDev"
+          ],
+          "type": "jenkins"
+        },
+        {
+          "continuePipeline": false,
+          "failPipeline": true,
+          "job": "SecurityScan",
+          "master": "my-jenkins-master",
+          "name": "Security Scan",
+          "parameters": {
+            "DependencyCheck": true,
+            "Environment": "${trigger.user}"
+          },
+          "propertyFile": "scan.properties",
+          "refId": "SecurityScan",
+          "requisiteStageRefIds": [
+            "deployDev"
+          ],
+          "type": "jenkins"
+        },
+        {{
+          module "manual.judgement.module"
+          "name" "Manual Judgment"
+          "instructions" "Check the website. Did it deploy properly?"
+          "requisiteStageRefIds" ["SecurityScan","IntegrationTest"]
+          "judgmentInputs" [{"value": "But of course"}, {"value": "No"}]
+        }},
+        {
+          "account": "gke-away",
+          "cloudProvider": "kubernetes",
+          "location": "dev",
+          "manifestName": "deployment website-dev",
+          "mode": "static",
+          "name": "Undo Stage Rollout (Manifest)",
+          "numRevisionsBack": 1,
+          "refId": "3",
+          "requisiteStageRefIds": [
+            "Manual Judgment"
+          ],
+          "stageEnabled": {
+            "expression": "${#judgment(\"Manual Judgment\") == \"No\"}",
+            "type": "expression"
+          },
+          "type": "undoRolloutManifest"
+        },
+        {
+          "account": "gke-away",
+          "cloudProvider": "kubernetes",
+          "manifestArtifactAccount": "away168-github-artifact-account",
+          "manifests": [
+            {
+              "apiVersion": "apps/v1",
+              "kind": "Deployment",
+              "metadata": {
+                "labels": {
+                  "app": "website"
+                },
+                "name": "website-prod",
+                "namespace": "prod"
+              },
+              "spec": {
+                "replicas": "${ #toInt( parameters.prodcount )  }",
+                "selector": {
+                  "matchLabels": {
+                    "app": "website"
+                  }
+                },
+                "template": {
+                  "metadata": {
+                    "labels": {
+                      "app": "website"
+                    }
+                  },
+                  "spec": {
+                    "containers": [
+                      {
+                        "image": "away168/mysite:${trigger.tag}",
+                        "name": "mysite",
+                        "ports": [
+                          {
+                            "containerPort": 80
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "moniker": {
+            "app": "website"
+          },
+          "name": "Deploy to GKE Prod 2019-NOV-16",
+          "refId": "4",
+          "relationships": {
+            "loadBalancers": [],
+            "securityGroups": []
+          },
+          "requisiteStageRefIds": [
+            "Manual Judgment"
+          ],
+          "skipExpressionEvaluation": false,
+          "source": "text",
+          "stageEnabled": {
+            "expression": "${#judgment(\"Manual Judgment\") != \"Nope\"}",
+            "type": "expression"
+          },
+          "trafficManagement": {
+            "enabled": false,
+            "options": {
+              "enableTraffic": true,
+              "namespace": "prod",
+              "services": [
+                "service website-prod-service"
+              ],
+              "strategy": "redblack"
+            }
+          },
+          "type": "deployManifest"
+        },
+        {{
+          module "deploy.stage.module" 
+          "account" "gke-away"
+          "name" "Deploy to Prod"
+          "namespace" "prod"
+          "refId" "deployProd"
+          "requisiteStageRefIds" ["Manual Judgment"]
+          "stageEnabledExpression" "${#judgment('Manual Judgment') != 'No'}"
+        }},
+        {{
+          module "wait.stage.module"
+          "name" "Deploy to Private K8s"
+          "waitTime" 15
+          "requisiteStageRefIds" ["Manual Judgment"]
+        }},
+        {{
+          module "wait.stage.module"
+          "name" "Deploy to AKS Prod"
+          "requisiteStageRefIds" ["Manual Judgment"]
+        }},
+        {{
+          module "wait.stage.module"
+          "name" "Deploy to EKS Prod"
+          "requisiteStageRefIds" ["Manual Judgment"]
+        }},
+        {{
+          module "wait.stage.module"
+          "name" "Deploy to PKS K8s"
+          "requisiteStageRefIds" ["Manual Judgment"]
+        }},
+        {{
+          module "wait.stage.module"
+          "name" "Deploy to OpenShift K8s"
+          "requisiteStageRefIds" ["Manual Judgment"]
+        }}
+      ],
+      "triggers": [
+        {
+          "account": "docker-registry-away168",
+          "enabled": false,
+          "organization": "away168",
+          "registry": "index.docker.io",
+          "repository": "away168/mysite",
+          "tag": "",
+          "type": "docker"
+        }
+      ],
+      "updateTs": "1568781085000"
     }
+  ]
+}
