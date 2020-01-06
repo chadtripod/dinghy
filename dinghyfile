@@ -25,7 +25,7 @@
       "limitConcurrent": true,
       "name": "Made By Dinghy",
       "stages": [
-        {{ moudle "wait.stage.module"}}
+        {{ module "wait.stage.module"}}
       ],
       "triggers": []
     }
