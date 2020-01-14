@@ -24,8 +24,14 @@
       "keepWaitingPipelines": false,
       "limitConcurrent": true,
       "name": "Made By Dinghy",
-      {{ module "wait.stage.module" }}
-       module {{
+      "stages": [
+        {
+          "name": "Wait",
+          "refId": "1",
+          "requisiteStageRefIds": [],
+          "type": "wait",
+          "waitTime": 60
+        }
       ],
       "triggers": []
     }
