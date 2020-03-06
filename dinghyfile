@@ -25,7 +25,7 @@
       "limitConcurrent": true,
       "name": "Made By Dinghy",
       "stages": [
-        {{ module "wait.stage.module"}}
+        {{ module "wait.stage.module" }} // Module created in dinghy-templates repo
       ],
       "triggers": []
     }
