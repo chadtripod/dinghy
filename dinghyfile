@@ -1,39 +1,67 @@
 {
-  "application": "dinghy",
+  "application": "Kustomize-Dinghy",
   "pipelines": [
+     "name": "the name of your pipeline",
+     "application": "Kustomize-Dinghy",
+"{
+  "expectedArtifacts": [],
+  "keepWaitingPipelines": false,
+  "lastModifiedBy": "admin",
+  "limitConcurrent": true,
+  "spelEvaluator": "v4",
+  "stages": [
     {
-      "application": "dinghy",
-      "index": 2,
-      "keepWaitingPipelines": false,
-      "limitConcurrent": true,
-      "name": "Simple",
-      "stages": [
+      "expectedArtifacts": [
         {
-          "name": "Wait",
-          "refId": "1",
-          "requisiteStageRefIds": [],
-          "type": "wait",
-          "waitTime": 60
+          "defaultArtifact": {
+            "customKind": true,
+            "id": "15103164-3e3e-4dc5-b78e-3ca56ba3e21b"
+          },
+          "displayName": "kustomization.yml",
+          "id": "2b543d7b-7c6e-4556-86c9-7455f5ad7913",
+          "matchArtifact": {
+            "artifactAccount": "embedded-artifact",
+            "id": "23709cbb-7bcd-4334-bab6-aa030994d0ea",
+            "name": "kustomization.yml",
+            "type": "embedded/base64"
+          },
+          "useDefaultArtifact": false,
+          "usePriorArtifact": false
         }
       ],
-      "triggers": []
-    },
-    {
-      "application": "dinghy",
-      "index": 3,
-      "keepWaitingPipelines": false,
-      "limitConcurrent": true,
-      "name": "Made By Dinghy",
-      "stages": [
-        {
-          "name": "Wait",
-          "refId": "1",
-          "requisiteStageRefIds": [],
-          "type": "wait",
-          "waitTime": 60
+      "inputArtifact": {
+        "account": "gitrepo",
+        "artifact": {
+          "artifactAccount": "gitrepo",
+          "customKind": true,
+          "id": "ee6baa4e-3323-44c5-8db7-ef7c576479d1",
+          "reference": "https://github.com/chadtripod/kustomize.git",
+          "type": "git/repo",
+          "version": "master"
         }
-      ],
-      "triggers": []
+      },
+      "inputArtifacts": [],
+      "kustomizeFilePath": "kustomization.yaml",
+      "name": "Kustomize that Stuff!",
+      "overrides": {},
+      "refId": "2",
+      "requisiteStageRefIds": [],
+      "templateRenderer": "KUSTOMIZE",
+      "type": "bakeManifest"
     }
+  ],
+  "triggers": [
+    {
+      "branch": "master",
+      "enabled": true,
+      "expectedArtifactIds": [],
+      "project": "chadtripod",
+      "slug": "kustomize",
+      "source": "github",
+      "type": "git"
+    }
+  ],
+  "updateTs": "1593717520000"
+}"
   ]
-}
+} 
