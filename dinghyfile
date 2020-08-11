@@ -2,7 +2,7 @@
   "application": "dinghy",
   "pipelines": [
     {
-      "application": "dinghy2",
+      "application": "dinghy",
       "index": 2,
       "keepWaitingPipelines": false,
       "limitConcurrent": true,
@@ -13,7 +13,7 @@
           "refId": "1",
           "requisiteStageRefIds": [],
           "type": "wait",
-          "waitTime": 54
+          "waitTime": 60
         }
       ],
       "triggers": []
