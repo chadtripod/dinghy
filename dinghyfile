@@ -2,7 +2,7 @@
   "application": "dinghy",
   "pipelines": [
     {
-      "application": "dinghy",
+      "application": "dinghy2",
       "index": 2,
       "keepWaitingPipelines": false,
       "limitConcurrent": true,
